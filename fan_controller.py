@@ -38,15 +38,14 @@ class FanController:
         percentage = (temp - low) / (high - low)
         # Return percentage if it's between 0 and 1
         return min(
-            max(
-                0,
+            max(0,
                 percentage),
-            100
+            1
         )
 
     def _set_fan_speed(self, speed_percentage: float) -> None:
         assert speed_percentage >= 0, "Speed percentage should be positive"
-        assert speed_percentage <= 100, "Speed percentage cannot exceed 100"
+        assert speed_percentage <= 1, "Speed percentage cannot exceed 1"
 
         speed_integer = self._determine_speed_integer(speed_percentage)
         self._set_pwm(speed_integer)
@@ -57,7 +56,7 @@ class FanController:
         assert high >= low, "FAN_PWM_HIGH should be higher than FAN_PWM_LOW"
 
         difference = high - low
-        extra = (speed_percentage / 100) * difference
+        extra = speed_percentage * difference
         return round(extra + low)
 
     def _set_pwm(self, speed: int) -> None:
