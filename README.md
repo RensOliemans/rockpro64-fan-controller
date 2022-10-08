@@ -23,13 +23,14 @@ You can do this with `cron` on boot (see the original repo this was forked
 from), I prefer to do it with `systemd`:
 
 ```bash
-# put fancontroller somewhere in your (and systemds) path
 ln -s /path/to/fancontroller /usr/bin/  
 ln -s /path/to/rockpro-fan.conf /etc/
 ln -s /path/to/fancontrol.service /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable --now fancontrol
 ```
+
+You can also install using `install.sh`.
 
 
 ## Dealing with changing hwmon name
