@@ -12,6 +12,7 @@ class FanController:
     def __init__(self, configfile=DEFAULT_CONFIGFILE):
         self._configfile = configfile
         self.config = self._load_config()
+        self.previously_set_speed = -1
 
     def _load_config(self) -> configparser.ConfigParser:
         config = configparser.ConfigParser()
@@ -22,9 +23,9 @@ class FanController:
     def run(self) -> None:
         while True:
             temp = self._get_temperature()
+            print(f"CPU temperature: {temp} °C")
             speed = self._determine_speed_percentage(temp)
             self._set_fan_speed(speed)
-            print(f"CPU temperature: {temp} °C")
             self._sleep()
 
     def _get_temperature(self) -> float:
@@ -48,7 +49,13 @@ class FanController:
         assert speed_percentage <= 1, "Speed percentage cannot exceed 1"
 
         speed_integer = self._determine_speed_integer(speed_percentage)
+
+        if speed_integer == self.previously_set_speed:
+            print(f"Not setting speed again - same as last time")
+            return
+
         self._set_pwm(speed_integer)
+        self.previously_set_speed = speed_integer
 
     def _determine_speed_integer(self, speed_percentage: float) -> int:
         low = int(self.config['FanPWMLow'])
