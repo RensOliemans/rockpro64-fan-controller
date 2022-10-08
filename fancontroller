@@ -31,7 +31,7 @@ class FanController:
     def run(self) -> None:
         while True:
             temp = self._get_temperature()
-            logger.info("CPU temperature: %s °C", temp)
+            logger.debug("CPU temperature: %s °C", temp)
             speed = self._determine_speed_percentage(temp)
             self._set_fan_speed(speed)
             self._sleep()
@@ -64,7 +64,7 @@ class FanController:
     def _determine_speed_integer(self, speed_percentage: float) -> int:
         low = int(self.config["FanPWMLow"])
         high = int(self.config["FanPWMHigh"])
-        assert high >= low, "FAN_PWM_HIGH should be higher than FAN_PWM_LOW"
+        assert high >= low, "FanPWMHigh should be higher than FanPWMLow"
 
         difference = high - low
         extra = speed_percentage * difference
