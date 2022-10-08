@@ -32,8 +32,8 @@ class FanController:
             return int(f.read()) / 1000
 
     def _determine_speed_percentage(self, temp: float) -> float:
-        low = float(self.config['LowTemperatureSpeed'])
-        high = float(self.config['HighTemperatureSpeed'])
+        low = float(self.config['LowSpeedTemperature'])
+        high = float(self.config['HighSpeedTemperature'])
 
         percentage = (temp - low) / (high - low)
         # Return percentage if it's between 0 and 1
@@ -52,8 +52,8 @@ class FanController:
         self._set_pwm(speed_integer)
 
     def _determine_speed_integer(self, speed_percentage: float) -> int:
-        high = int(self.config['FAN_PWM_HIGH'])
-        low = int(self.config['FAN_PWM_LOW'])
+        low = int(self.config['FanPWMLow'])
+        high = int(self.config['FanPWMHigh'])
         assert high >= low, "FAN_PWM_HIGH should be higher than FAN_PWM_LOW"
 
         difference = high - low
@@ -80,7 +80,7 @@ class FanController:
             f.write(str(speed))
 
     def _sleep(self) -> None:
-        time.sleep(self.config['SleepTime'])
+        time.sleep(int(self.config['SleepSeconds']))
 
 
 def main():
