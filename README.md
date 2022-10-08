@@ -8,14 +8,15 @@ writing it to hwmon, enabling or disabling the fan.
 ## Parameters to configure
 See `rockpro-fan.conf`.
 
-| Config               | Explanation                                                 |
-|----------------------|-------------------------------------------------------------|
-| TemperatureFile      | File to retrieve temperature from, in millidegrees Celsius  |
-| LowSpeedTemperature  | Temperature at which to start blowing the fan slowly        |
-| HighSpeedTemperature | Temperature at which to start blowing the fan at high speed |
-| FanPWMLow            | Speed of slowly blowing fan. Test this out on your machine! |
-| FanPWMHigh           | Speed of quickly blowing fan. 255 is maximum.               |
-| SleepSeconds         | How long to sleep between measurements                      |
+| Config               | Explanation                                                              |
+|----------------------|--------------------------------------------------------------------------|
+| TemperatureFile      | File to retrieve temperature from, in millidegrees Celsius               |
+| LowSpeedTemperature  | Temperature at which to start blowing the fan slowly                     |
+| HighSpeedTemperature | Temperature at which to start blowing the fan at high speed              |
+| FanPWMLow            | Speed of slowly blowing fan. Test this out on your machine!              |
+| FanPWMHigh           | Speed of quickly blowing fan. 255 is maximum.                            |
+| SleepSeconds         | How long to sleep between measurements                                   |
+| LoggingLevel         | LoggingLevel (see https://docs.python.org/3/library/logging.html#levels) |
 
 
 ## Run on startup
