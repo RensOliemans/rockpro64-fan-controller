@@ -10,7 +10,6 @@ from collections.abc import Iterator
 DEFAULT_CONFIGFILE = "/etc/rockpro-fan.conf"
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(stream=sys.stdout)
 logger.addHandler(handler)
@@ -21,6 +20,7 @@ class FanController:
         self._configfile = configfile
         self.config = self._load_config()
         self.previously_set_speed = -1
+        logger.setLevel(int(self.config['LoggingLevel']))
 
     def _load_config(self) -> configparser.SectionProxy:
         config = configparser.ConfigParser()
