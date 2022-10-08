@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
-import time
-import os
 import configparser
-
+import os
+import time
 from collections.abc import Iterator
 
 DEFAULT_CONFIGFILE = "/etc/rockpro-fan.conf"
@@ -15,9 +14,9 @@ class FanController:
         self.config = self._load_config()
         self.previously_set_speed = -1
 
-    def _load_config(self) -> configparser.ConfigParser:
+    def _load_config(self) -> configparser.SectionProxy:
         config = configparser.ConfigParser()
-        with open(self._configfile) as stream:
+        with open(self._configfile, encoding="utf8") as stream:
             config.read_string("[top]\n" + stream.read())
         return config["top"]
 
@@ -30,7 +29,7 @@ class FanController:
             self._sleep()
 
     def _get_temperature(self) -> float:
-        with open(self.config["TemperatureFile"], "r") as f:
+        with open(self.config["TemperatureFile"], "r", encoding="utf8") as f:
             return int(f.read()) / 1000
 
     def _determine_speed_percentage(self, temp: float) -> float:
@@ -48,7 +47,7 @@ class FanController:
         speed_integer = self._determine_speed_integer(speed_percentage)
 
         if speed_integer == self.previously_set_speed:
-            print(f"Not setting speed again - same as last time")
+            print("Not setting speed again - same as last time")
             return
 
         self._set_pwm(speed_integer)
@@ -79,7 +78,7 @@ class FanController:
 
     def _set_pwm_of_device(self, filename: str, speed: int) -> None:
         print(f"Setting {speed} of {filename}")
-        with open(filename, "w") as f:
+        with open(filename, "w", encoding="utf8") as f:
             f.write(str(speed))
 
     def _sleep(self) -> None:
