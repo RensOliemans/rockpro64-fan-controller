@@ -15,8 +15,9 @@ class FanController:
 
     def _load_config(self) -> configparser.ConfigParser:
         config = configparser.ConfigParser()
-        config.read(self._configfile)
-        return config
+        with open(self._configfile) as stream:
+            config.read_string("[top]\n" + stream.read())
+        return config['top']
 
     def run(self) -> None:
         while True:
