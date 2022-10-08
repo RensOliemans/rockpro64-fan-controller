@@ -4,6 +4,8 @@ import time
 import os
 import configparser
 
+from collections.abc import Iterator
+
 DEFAULT_CONFIGFILE = '/etc/rockpro-fan.conf'
 
 class FanController:
