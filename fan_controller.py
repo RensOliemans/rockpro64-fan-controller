@@ -65,7 +65,7 @@ class FanController:
         for device in valid_devices:
             self._set_pwm_of_device(device, speed)
 
-    def _get_existing_device_filenames() -> Iterator[str]:
+    def _get_existing_device_filenames(self) -> Iterator[str]:
         hardcoded_hwmon_max_amount = 16
         hardcoded_hwmon_path = "/sys/devices/platform/pwm-fan/hwmon/hwmon{id}/pwm1"
 
@@ -74,7 +74,7 @@ class FanController:
             if os.path.exists(filename):
                 yield filename
 
-    def _set_pwm_of_device(filename: str, speed: int) -> None:
+    def _set_pwm_of_device(self, filename: str, speed: int) -> None:
         print(f"Setting {speed} of {filename}")
         with open(filename, "w") as f:
             f.write(str(speed))
