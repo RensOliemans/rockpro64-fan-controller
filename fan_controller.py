@@ -6,7 +6,8 @@ import configparser
 
 from collections.abc import Iterator
 
-DEFAULT_CONFIGFILE = '/etc/rockpro-fan.conf'
+DEFAULT_CONFIGFILE = "/etc/rockpro-fan.conf"
+
 
 class FanController:
     def __init__(self, configfile=DEFAULT_CONFIGFILE):
@@ -18,7 +19,7 @@ class FanController:
         config = configparser.ConfigParser()
         with open(self._configfile) as stream:
             config.read_string("[top]\n" + stream.read())
-        return config['top']
+        return config["top"]
 
     def run(self) -> None:
         while True:
@@ -29,20 +30,16 @@ class FanController:
             self._sleep()
 
     def _get_temperature(self) -> float:
-        with open(self.config['TemperatureFile'], 'r') as f:
+        with open(self.config["TemperatureFile"], "r") as f:
             return int(f.read()) / 1000
 
     def _determine_speed_percentage(self, temp: float) -> float:
-        low = float(self.config['LowSpeedTemperature'])
-        high = float(self.config['HighSpeedTemperature'])
+        low = float(self.config["LowSpeedTemperature"])
+        high = float(self.config["HighSpeedTemperature"])
 
         percentage = (temp - low) / (high - low)
         # Return percentage if it's between 0 and 1
-        return min(
-            max(0,
-                percentage),
-            1
-        )
+        return min(max(0, percentage), 1)
 
     def _set_fan_speed(self, speed_percentage: float) -> None:
         assert speed_percentage >= 0, "Speed percentage should be positive"
@@ -58,8 +55,8 @@ class FanController:
         self.previously_set_speed = speed_integer
 
     def _determine_speed_integer(self, speed_percentage: float) -> int:
-        low = int(self.config['FanPWMLow'])
-        high = int(self.config['FanPWMHigh'])
+        low = int(self.config["FanPWMLow"])
+        high = int(self.config["FanPWMHigh"])
         assert high >= low, "FAN_PWM_HIGH should be higher than FAN_PWM_LOW"
 
         difference = high - low
@@ -86,7 +83,7 @@ class FanController:
             f.write(str(speed))
 
     def _sleep(self) -> None:
-        time.sleep(int(self.config['SleepSeconds']))
+        time.sleep(int(self.config["SleepSeconds"]))
 
 
 def main():
@@ -94,5 +91,5 @@ def main():
     fancontroller.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
