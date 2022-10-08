@@ -2,63 +2,88 @@
 
 import time
 import os
+import configparser
 
-FAN_PWM_LOW = 200
-FAN_PWM_HIGH = 255
+DEFAULT_CONFIGFILE = '/etc/rockpro-fan.conf'
 
-TEMPERATURE_LOW = 60    #below this temperature fan does not spin
-TEMPERATURE_HIGH = 85   #over this temperature fan spins with 100% speed
+class FanController:
+    def __init__(self, configfile=DEFAULT_CONFIGFILE):
+        self._configfile = configfile
+        self.config = self._load_config()
 
-# Write PWM duty to file in existing hwmon
-def setFanSpeedRAW(speed): 
-    speed = int(speed)  #convert speed to integer (required by hwmon)
+    def _load_config(self) -> configparser.ConfigParser:
+        config = configparser.ConfigParser()
+        config.read(self._configfile)
+        return config
 
-    for hwmon_id in range(16):
-        if os.path.exists("/sys/devices/platform/pwm-fan/hwmon/hwmon" + str(hwmon_id) + "/pwm1"):
-            with open("/sys/devices/platform/pwm-fan/hwmon/hwmon" + str(hwmon_id) + "/pwm1", "w") as fhandle:
-                print("hmnon found as hwmon", str(hwmon_id))
-                fhandle.write(str(speed))
-    print("setFanSpeedRAW = ", str(speed))
-    
+    def run(self) -> None:
+        while True:
+            temp = self._get_temperature()
+            speed = self._determine_speed_percentage(temp)
+            self._set_fan_speed(speed)
+            print(f"CPU temperature: {temp} °C")
+            self._sleep()
 
-def map(x, in_min, in_max, out_min, out_max):
-    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+    def _get_temperature(self) -> float:
+        with open(self.config['TemperatureFile'], 'r') as f:
+            return int(f.read()) / 1000
+
+    def _determine_speed_percentage(self, temp: float) -> float:
+        low = float(self.config['LowTemperatureSpeed'])
+        high = float(self.config['HighTemperatureSpeed'])
+
+        percentage = (temp - low) / (high - low)
+        # Return percentage if it's between 0 and 1
+        return min(
+            max(
+                0,
+                percentage),
+            100
+        )
+
+    def _set_fan_speed(self, speed_percentage: float) -> None:
+        assert speed_percentage >= 0, "Speed percentage should be positive"
+        assert speed_percentage <= 100, "Speed percentage cannot exceed 100"
+
+        speed_integer = self._determine_speed_integer(speed_percentage)
+        self._set_pwm(speed_integer)
+
+    def _determine_speed_integer(self, speed_percentage: float) -> int:
+        high = int(self.config['FAN_PWM_HIGH'])
+        low = int(self.config['FAN_PWM_LOW'])
+        assert high >= low, "FAN_PWM_HIGH should be higher than FAN_PWM_LOW"
+
+        difference = high - low
+        extra = (speed_percentage / 100) * difference
+        return round(extra + low)
+
+    def _set_pwm(self, speed: int) -> None:
+        valid_devices = self._get_existing_device_filenames()
+        for device in valid_devices:
+            self._set_pwm_of_device(device, speed)
+
+    def _get_existing_device_filenames() -> Iterator[str]:
+        hardcoded_hwmon_max_amount = 16
+        hardcoded_hwmon_path = "/sys/devices/platform/pwm-fan/hwmon/hwmon{id}/pwm1"
+
+        for hwmon_id in range(hardcoded_hwmon_max_amount):
+            filename = hardcoded_hwmon_path.format(id=hwmon_id)
+            if os.path.exists(filename):
+                yield filename
+
+    def _set_pwm_of_device(filename: str, speed: int) -> None:
+        print(f"Setting {speed} of {filename}")
+        with open(filename, "w") as f:
+            f.write(str(speed))
+
+    def _sleep(self) -> None:
+        time.sleep(self.config['SleepTime'])
 
 
-def setFanSpeedPercent(speed):
-    if speed == 0:
-        setFanSpeedRAW(0);
-        return
-    speed = map(speed, 0, 100, FAN_PWM_LOW, FAN_PWM_HIGH)
-    setFanSpeedRAW(speed)
-    
-
-def getTemperature():
-    with open('/etc/armbianmonitor/datasources/soctemp', 'r') as fhandle:
-        temp = int(fhandle.read())/1000
-        return round(temp, 1)
+def main():
+    fancontroller = FanController()
+    fancontroller.run()
 
 
-# main script
-
-print("Fan turn off temperature threshold =   ", TEMPERATURE_LOW)
-print("Fan full speed temperature threshold = ", TEMPERATURE_HIGH)
-print(" ")
-
-# infinite loop
-while 1:
-    temp = getTemperature()
-
-    if temp < TEMPERATURE_LOW:
-        setFanSpeedPercent(0)
-
-    elif temp > TEMPERATURE_HIGH:
-        setFanSpeedPercent(100)
-    
-    else:
-        speed = map(temp, TEMPERATURE_LOW, TEMPERATURE_HIGH, 0, 100)
-        setFanSpeedPercent(speed);
-
-    print("CPU temperature = ", temp, "C")
-    time.sleep(5)
-
+if __name__ == '__main__':
+    main()
