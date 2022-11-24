@@ -1,9 +1,10 @@
 # Control fan on RockPro64 according to CPU temperature
 
-This is a simple python script that I use to control fan on RockPro64 SBC
-running Armbian + OpenMediaVault. All it does is reading temperature from
-armbianmonitor, converting it to PWM duty on dedicated FAN connector and
-writing it to hwmon, enabling or disabling the fan.
+This is a simple python script that I use to control fan on RockPro64
+SBC running Armbian + OpenMediaVault. All it does is reading
+temperature from armbianmonitor, converting it to PWM duty on
+dedicated FAN connector and writing it to hwmon, enabling or disabling
+the fan.
 
 ## Parameters to configure
 See `rockpro-fan.conf`.
@@ -20,24 +21,16 @@ See `rockpro-fan.conf`.
 
 
 ## Run on startup
-You can do this with `cron` on boot (see the original repo this was forked
-from), I prefer to do it with `systemd`:
-
-```bash
-ln -s /path/to/fancontroller /usr/bin/  
-ln -s /path/to/rockpro-fan.conf /etc/
-ln -s /path/to/fancontrol.service /etc/systemd/system/
-systemctl daemon-reload
-systemctl enable --now fancontrol
-```
-
-You can also install using `install.sh`.
-
+Install using `make install`. The configfile will be symlinked to
+`/etc/rockpro-fan.conf`. It needs to be run with read-access to
+`/etc/`, `/usr/bin/` and `/etc/systemd/system/`, running as `root`
+will make this work.
 
 ## Dealing with changing hwmon name
 
-Actual name of hwmon differs between reboots. Sometimes it is called hwmon2,
-the other time hwmon3. In this system there is only one hwmon anyway, so number
-is found by polling each name in certain range. This is not elegant solution
-and will break if more hwmons are found in a system.
+Actual name of hwmon differs between reboots. Sometimes it is called
+hwmon2, the other time hwmon3. In this system there is only one hwmon
+anyway, so number is found by polling each name in certain range. This
+is not elegant solution and will break if more hwmons are found in a
+system.
 
